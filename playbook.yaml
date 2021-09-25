@@ -1,0 +1,61 @@
+---
+
+ - name: lt-2021-051
+   hosts: webservers
+   tasks:
+
+    - name: Updating and upgrading apt packages
+      apt:
+       upgrade: yes
+       update_cache: yes
+
+    - name: Installation install software-properties-common
+      apt: name=software-properties-common
+
+    - name: "Repo PHP 7.4"
+      apt_repository:
+       repo="ppa:ondrej/php"
+
+    - name: "Updating the repo"
+      apt: update_cache=yes
+
+    - name: Installing PHP 7.4
+      apt: name=php7.4 state=present
+
+    - name: Installing apache2
+      apt: name=apache2 update_cache=yes state=latest
+
+    - name: Starting the apache2 service
+      service:
+       name: apache2
+       state: started
+       enabled: true
+
+    - name: Installing Firewalld
+      apt: name=firewalld update_cache=yes state=latest
+
+    - name: Allow the service from the firewall
+      firewalld:
+       #service: apache2
+       permanent: yes
+       state: enabled
+       immediate: yes
+       port: 80/tcp
+      notify: restart firewalld
+
+    - name: Copy index file
+      copy:
+       src: ./index.php
+       dest: /var/www/html
+      notify: restart apache2
+   
+   handlers:
+    - name: restart firewalld
+      service:
+       name: firewalld
+       state: restarted
+
+    - name: restart apache2
+      service:
+       name: apache2
+       state: restarted

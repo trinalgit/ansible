@@ -1,0 +1,11 @@
+---
+# handlers file for web-stg
+- name: restart firewalld
+  service:
+   name: firewalld
+   state: restarted
+
+- name: restart apache2
+  service:
+   name: apache2
+   state: restarted
